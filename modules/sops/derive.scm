@@ -4,7 +4,7 @@
 (define-module (sops derive)
   #:use-module (gnu packages base)
   #:use-module (gnu packages golang-crypto)
-  #:use-module (gnu packages password-utils)
+  #:use-module (sops packages sops)
   #:use-module (guix gexp)
   #:use-module (guix modules)
   #:use-module (sops self)
