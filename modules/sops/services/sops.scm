@@ -231,6 +231,14 @@ identities where SOPS should look for when decrypting a secret.")
   (shepherd-service (provision sops-provision)
                     (requirement requirement)
                     (one-shot? #t)
+                    ;; respawn? defaults to #t in shepherd-service.  A
+                    ;; one-shot transitions to "stopped" the moment it
+                    ;; succeeds, so with respawn? #t shepherd loops it
+                    ;; every couple of seconds — each iteration restarts
+                    ;; every sops-secret-* dependency and cascades into
+                    ;; killing any service whose requirement chain leads
+                    ;; here.  Run-once-per-boot is the intended semantic.
+                    (respawn? #f)
                     (documentation
                      "SOPS secrets provisioning service.")
                     (start
@@ -274,6 +282,10 @@ identities where SOPS should look for when decrypting a secret.")
                        secret #:home-service? home-service?)))
                     (requirement requirement)
                     (one-shot? #t)
+                    ;; See note on respawn? in the sops-secrets aggregator
+                    ;; above — same loop hazard applies to each per-secret
+                    ;; one-shot.  Provision-once-per-boot.
+                    (respawn? #f)
                     (documentation
                      "SOPS secret decrypting service.")
                     (start
@@ -303,6 +315,8 @@ identities where SOPS should look for when decrypting a secret.")
   (shepherd-service (provision '(sops-secrets-host-key))
                     (requirement '(user-processes))
                     (one-shot? #t)
+                    ;; See note on respawn? in sops-secrets-shepherd-service.
+                    (respawn? #f)
                     (documentation
                      "Generate host key for the SOPS service to use.")
                     (start
